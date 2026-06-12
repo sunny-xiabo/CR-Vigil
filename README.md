@@ -1,6 +1,30 @@
 # CR-Vigil Monitor
 
-基于 GitLab API 的自动化 CR 监控报告系统。自动采集 MR 数据，按四道门禁体系评估测试准入条件，为测试团队生成结构化的中文报告。
+基于 GitLab API 的自动化 CR 监控报告系统。自动采集 MR 数据，按四道门禁体系评估测试准入条件，为测试团队生成结构化的中文报告。支持团队共享模式，一人评估全团队可见。
+
+## 两种使用方式
+
+### 团队共享模式（推荐）
+
+全团队共享一份 `data/pr-registry.json`，每个测试人员生成的报告自动通过 Git 同步。
+
+```bash
+git clone git@github.com:sunny-xiabo/CR-Vigil.git
+cd CR-Vigil
+export GITLAB_TOKEN="你的个人token"
+# 默认就是团队模式，直接使用
+/cr-vigil-monitor --admit <MR链接>
+# 自动拉取团队最新数据 → 评估 → 自动推送
+```
+
+多人同时使用时，Skill 会自动处理 `git pull` 和 `git push`，确保数据一致。
+
+### 个人模式
+
+```bash
+export CRVIGIL_MODE=personal
+# 数据仅保存在本地，不会推送到团队仓库
+```
 
 ## 环境配置
 

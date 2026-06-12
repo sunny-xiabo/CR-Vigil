@@ -240,6 +240,47 @@ active_gates = [g for g in [Gate1, Gate2, Gate3] if g.STATUS != N/A]
    - 准入判定（准入报告）或关键统计（日报/周报）
    - 评估的 PR 数量
 
+3. 团队模式下，自动同步数据：
+   - 调用 `scripts/sync.sh pull` 拉取团队最新数据（在评估前）
+   - 写入报告后，调用 `scripts/sync.sh push "评估: {PR_ID} → {VERDICT}"` 推送到团队仓库
+   - 个人模式下，跳过此步
+
+## 团队协作模式
+
+Skill 支持两种运行模式，通过环境变量切换：
+
+### 团队模式（默认）
+
+```bash
+export CRVIGIL_MODE=team
+```
+
+- `data/pr-registry.json` 和 `reports/` 通过 Git 全团队共享
+- Skill 执行时自动 `sync pull` 拉取最新数据，完成后自动 `sync push`
+- 所有测试人员看到同一份 PR 登记表和报告
+- 需要 Git push 权限
+
+### 个人模式
+
+```bash
+export CRVIGIL_MODE=personal
+```
+
+- 数据和报告仅保存在本地，不自动推送
+- 适合试用、个人练习、或无 Git 推送权限的场景
+- 如需彻底隔离，取消 `.gitignore` 中 `data/pr-registry.json` 和 `reports/` 的注释
+
+### 团队新人上手步骤
+
+```bash
+git clone git@github.com:sunny-xiabo/CR-Vigil.git
+cd CR-Vigil
+export GITLAB_TOKEN="你的token"
+# 默认就是团队模式，无需额外配置
+/cr-vigil-monitor --admit <MR链接>
+# 自动拉取团队数据 → 评估 → 自动推送结果
+```
+
 ## 每日汇总专用逻辑
 
 1. 从 `data/pr-registry.json` 读取所有活跃 PR（状态为 open）
@@ -302,6 +343,10 @@ export GITLAB_TOKEN="glpat-xxxx"
 
 # GitLab 实例地址（可选，默认从 MR URL 自动解析）
 export GITLAB_HOST="https://gitlab.example.com"
+
+# 运行模式（可选，默认 team）
+export CRVIGIL_MODE=team      # 团队模式：自动同步 Git
+export CRVIGIL_MODE=personal  # 个人模式：仅本地运行
 
 # CI Job 名称映射（可选，当流水线 Job 命名不标准时使用）
 export CRVIGIL_JOB_MAPPING='{"unit_test":"run-tests","coverage":"coverage-report","static_scan":"sonar","smoke_test":"smoke"}'

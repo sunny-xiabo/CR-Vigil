@@ -1,3 +1,14 @@
+# =============================================================================
+# 团队模式（默认）：
+#   data/pr-registry.json 和 reports/ 会被 Git 追踪，实现全团队共享
+#
+# 个人模式：
+#   export CRVIGIL_MODE=personal
+#   取消下面两行的注释，然后执行: git rm --cached data/pr-registry.json reports/
+# =============================================================================
+# data/pr-registry.json
+# reports/
+
 # Claude Code 本地配置
 .claude/settings.local.json
 
