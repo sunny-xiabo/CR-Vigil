@@ -18,7 +18,7 @@ Token 获取路径：GitLab → Settings → Access Tokens → 勾选 `read_api`
 ```bash
 # 测试 Token 是否有效
 curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "https://gitlab.miotech.com/api/v4/user" | python3 -c "import sys,json; print(json.load(sys.stdin).get('username','FAIL'))"
+  "https://gitlab.example.com/api/v4/user" | python3 -c "import sys,json; print(json.load(sys.stdin).get('username','FAIL'))"
 ```
 
 ## 快速开始
@@ -26,7 +26,7 @@ curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
 ### 生成单 MR 提测准入报告
 
 ```bash
-/cr-vigil-monitor --admit https://gitlab.miotech.com/miotech-application/esghub/crrc/esghub-service-crrc/-/merge_requests/27
+/cr-vigil-monitor --admit https://gitlab.example.com/your-group/your-project/-/merge_requests/27
 ```
 
 Skill 会自动：

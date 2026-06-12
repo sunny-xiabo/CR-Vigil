@@ -2,7 +2,7 @@
 
 **报告编号**：ADM-MR-3-llm-testgen-2026-06-12
 **生成时间**：2026-06-12T16:30:00+08:00
-**PR 链接**：[MR-3-llm-testgen](https://gitlab.miotech.com/miotech-application/esghub/test/llm-testgen/-/merge_requests/3)
+**PR 链接**：[MR-3-llm-testgen](https://gitlab.example.com/your-group/your-project/-/merge_requests/3)
 **开发人员**：boxia
 **AI 代码占比**：未声明
 **审查人**：无

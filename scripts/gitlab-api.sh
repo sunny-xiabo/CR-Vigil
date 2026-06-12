@@ -4,7 +4,7 @@
 # 用法: source scripts/gitlab-api.sh
 #
 # 依赖环境变量:
-#   GITLAB_HOST  - GitLab 实例地址，默认 https://gitlab.miotech.com
+#   GITLAB_HOST  - GitLab 实例地址，默认 https://gitlab.example.com
 #   GITLAB_TOKEN - GitLab Personal Access Token（必填）
 #
 # 提供的函数:
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 # --- 配置 ---
-GITLAB_HOST="${GITLAB_HOST:-https://gitlab.miotech.com}"
+GITLAB_HOST="${GITLAB_HOST:-https://gitlab.example.com}"
 GITLAB_API_BASE="${GITLAB_HOST}/api/v4"
 PER_PAGE=100
 

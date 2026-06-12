@@ -166,7 +166,7 @@ Checklist（CK-01 至 CK-12）从 MR 描述中解析：
 export GITLAB_TOKEN="glpat-xxxx"
 
 # 可选（默认从 MR URL 自动解析）
-export GITLAB_HOST="https://gitlab.miotech.com"
+export GITLAB_HOST="https://gitlab.example.com"
 
 # 可选：Job 名称映射（当流水线 Job 命名不标准时使用）
 export CRVIGIL_JOB_MAPPING='{

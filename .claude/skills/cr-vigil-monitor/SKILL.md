@@ -42,7 +42,7 @@ description: >
 
 示例：
 ```
-/cr-vigil-monitor --admit https://gitlab.miotech.com/miotech-application/esghub/crrc/esghub-service-crrc/-/merge_requests/27
+/cr-vigil-monitor --admit https://gitlab.example.com/your-group/your-project/-/merge_requests/27
 ```
 
 Skill 会自动调用 `scripts/collect-mr-data.sh` 从 GitLab API 采集 MR 数据，然后评估门禁并生成报告。
@@ -301,7 +301,7 @@ GitLab API 字段映射详见 `references/gitlab-field-mapping.md`。
 export GITLAB_TOKEN="glpat-xxxx"
 
 # GitLab 实例地址（可选，默认从 MR URL 自动解析）
-export GITLAB_HOST="https://gitlab.miotech.com"
+export GITLAB_HOST="https://gitlab.example.com"
 
 # CI Job 名称映射（可选，当流水线 Job 命名不标准时使用）
 export CRVIGIL_JOB_MAPPING='{"unit_test":"run-tests","coverage":"coverage-report","static_scan":"sonar","smoke_test":"smoke"}'

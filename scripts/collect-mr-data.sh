@@ -4,7 +4,7 @@
 # 用法: ./scripts/collect-mr-data.sh <MR_URL>
 #
 # 示例: ./scripts/collect-mr-data.sh \
-#         https://gitlab.miotech.com/miotech-application/esghub/crrc/esghub-service-crrc/-/merge_requests/27
+#         https://gitlab.example.com/your-group/your-project/-/merge_requests/27
 #
 # 输出: 标准 JSON Schema 的 PR 数据写入 data/pr-registry.json
 #       并输出采集摘要到 stdout
@@ -33,7 +33,7 @@ parse_mr_url() {
     local url="$1"
 
     # 格式: https://<host>/<project_path>/-/merge_requests/<iid>
-    # 示例: https://gitlab.miotech.com/miotech-application/esghub/crrc/esghub-service-crrc/-/merge_requests/27
+    # 示例: https://gitlab.example.com/your-group/your-project/-/merge_requests/27
 
     # 提取 host
     MR_HOST=$(echo "$url" | sed -E 's|https?://([^/]+)/.*|\1|')
@@ -661,7 +661,7 @@ main() {
     if [ -z "$mr_url" ]; then
         log_error "缺少参数: 请提供 GitLab MR URL"
         echo "用法: $0 <MR_URL>"
-        echo "示例: $0 https://gitlab.miotech.com/org/project/-/merge_requests/27"
+        echo "示例: $0 https://gitlab.example.com/org/project/-/merge_requests/27"
         exit 1
     fi
 
