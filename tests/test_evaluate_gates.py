@@ -1,4 +1,5 @@
 import copy
+import json
 import unittest
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def base_pr():
             "pipeline_url": "",
             "unit_test": {"total": 0, "passed": 0, "failed": 0, "pass_rate": 0},
             "coverage": {"incremental_coverage_pct": 0, "threshold": 70},
-            "static_scan": {"blocker_count": -1, "critical_count": -1, "warning_count": 0, "tool": "sonar"},
+            "static_scan": {"blocker_count": 0, "critical_count": 0, "warning_count": 0, "tool": "sonar", "detected": False},
             "smoke_test": {"total": 0, "passed": 0, "failed": 0, "pass_rate": 0},
         },
         "declaration": {
@@ -61,10 +62,15 @@ class GateEvaluatorTest(unittest.TestCase):
     def test_existing_registry_verdicts_are_preserved(self):
         registry = evaluator.load_registry(ROOT / "data/pr-registry.json")
 
-        for pr in registry["prs"]:
-            with self.subTest(pr_id=pr["pr_id"]):
+        for pr_summary in registry["prs"]:
+            with self.subTest(pr_id=pr_summary["pr_id"]):
+                record_path = pr_summary.get("record_path")
+                if record_path and (ROOT / record_path).exists():
+                    pr = json.loads((ROOT / record_path).read_text(encoding="utf-8"))
+                else:
+                    pr = pr_summary
                 result = evaluator.evaluate_pr(pr)
-                self.assertEqual(result["verdict"], pr["verdict"])
+                self.assertEqual(result["verdict"], pr.get("verdict", pr_summary.get("verdict")))
 
     def test_gate1_na_allows_gate3_without_ci_proof(self):
         result = evaluator.evaluate_pr(base_pr())

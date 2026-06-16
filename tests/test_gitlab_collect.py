@@ -13,6 +13,7 @@ from crvigil.gitlab_collect import (
     reviewer_mapped_level,
     reviewer_level,
     collect_review,
+    collect_ci,
 )
 from crvigil.utils import ROOT
 
@@ -57,6 +58,27 @@ class GitlabCollectTest(unittest.TestCase):
         res2 = parse_ai_declaration(desc2)
         self.assertFalse(res2["declared"])
         self.assertTrue(res2["used"])
+
+    def test_parse_ai_declaration_negated(self):
+        for desc in [
+            "本次修改不涉及 AI 辅助功能",
+            "未使用 AI 生成代码",
+            "没有使用 AI 工具",
+            "不包含 AI 生成内容",
+            "No AI was used in this MR",
+        ]:
+            with self.subTest(desc=desc):
+                res = parse_ai_declaration(desc)
+                self.assertFalse(res["declared"], f"Should not declare for: {desc}")
+
+    def test_parse_ai_declaration_positive(self):
+        for desc in [
+            "AI 辅助占比 30%",
+            "使用 AI 工具: Copilot",
+        ]:
+            with self.subTest(desc=desc):
+                res = parse_ai_declaration(desc)
+                self.assertTrue(res["declared"], f"Should declare for: {desc}")
 
     def test_substantive_comment_count(self):
         notes = [
@@ -103,12 +125,43 @@ class GitlabCollectTest(unittest.TestCase):
         res = collect_review(client, "project_id", "iid", "author")
         self.assertEqual(res["reviewer_level"], "senior")
 
-        # Case 3: Reviewer not in registry, but MR approved. Infer senior.
+        # Case 3: Reviewer not in registry, but MR approved. Level unknown (no mapping).
         mock_mapped.return_value = None
         res = collect_review(client, "project_id", "iid", "author")
-        self.assertEqual(res["reviewer_level"], "senior")
+        self.assertEqual(res["reviewer_level"], "unknown")
 
-        # Case 4: Reviewer not in registry, MR not approved. Default to junior.
+        # Case 4: Reviewer not in registry, MR not approved. Level unknown.
         client.get_single.return_value = {"approved_by": []}
         res = collect_review(client, "project_id", "iid", "author")
-        self.assertEqual(res["reviewer_level"], "junior")
+        self.assertEqual(res["reviewer_level"], "unknown")
+
+    def test_collect_ci_returns_collect_error_on_api_failure(self):
+        client = MagicMock()
+        client.get_paginated.side_effect = GitLabCollectError("API timeout")
+        mode, ci = collect_ci(client, "project_id", "1")
+        self.assertEqual(mode, "collect_error")
+        self.assertEqual(ci["unit_test"]["total"], 0)
+        self.assertEqual(ci["static_scan"]["blocker_count"], 0)
+        self.assertFalse(ci["static_scan"]["detected"])
+
+    def test_collect_ci_returns_disabled_when_no_pipelines(self):
+        client = MagicMock()
+        client.get_paginated.return_value = []
+        mode, ci = collect_ci(client, "project_id", "1")
+        self.assertEqual(mode, "disabled")
+
+    def test_collect_ci_detects_static_scan_job(self):
+        client = MagicMock()
+        client.get_paginated.side_effect = [
+            [{"id": 100, "web_url": "http://ci/pipeline/100"}],
+            [
+                {"name": "sonar-scan", "status": "success", "id": 200},
+                {"name": "unit-test", "status": "success", "id": 201},
+            ],
+        ]
+        client.get_text.return_value = ""
+        mode, ci = collect_ci(client, "project_id", "1")
+        self.assertEqual(mode, "enabled")
+        self.assertTrue(ci["static_scan"]["detected"])
+        self.assertEqual(ci["static_scan"]["blocker_count"], 0)
+        self.assertEqual(ci["unit_test"]["pass_rate"], 100)

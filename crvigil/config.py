@@ -57,13 +57,15 @@ DEFAULT_CONFIG: dict[str, Any] = {
 
 def parse_scalar(value: str) -> Any:
     value = value.strip()
+    if not value:
+        return ""
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        return value[1:-1]
     lowered = value.lower()
     if lowered in {"true", "false"}:
         return lowered == "true"
     if lowered in {"null", "none", "~"}:
         return None
-    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
-        return value[1:-1]
     try:
         if "." in value:
             return float(value)

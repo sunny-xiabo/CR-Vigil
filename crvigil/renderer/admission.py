@@ -60,6 +60,9 @@ def admission_values(pr: dict[str, Any]) -> dict[str, Any]:
         "PENDING": "建议补齐缺失数据后重新执行评估。",
     }.get(verdict, "建议重新执行评估。")
 
+    verdict_emoji = {"ADMITTED": "\U0001f7e2", "CONDITIONAL": "\U0001f7e1", "REJECTED": "\U0001f534"}.get(verdict, "\U0001f7e0")
+    verdict_label_text = verdict_label(verdict)
+
     return {
         "PR_TITLE": pr.get("title", ""),
         "PR_ID": pr.get("pr_id", ""),
@@ -70,7 +73,7 @@ def admission_values(pr: dict[str, Any]) -> dict[str, Any]:
         "AI_PERCENTAGE": ai_pct,
         "REVIEWER": review.get("reviewer") or "未找到",
         "CI_MODE_LABEL": pr.get("ci_mode", "auto"),
-        "VERDICT_LABEL": f"{verdict}（🟢 {verdict_label(verdict)}）" if verdict == "ADMITTED" else (f"{verdict}（🟡 {verdict_label(verdict)}）" if verdict == "CONDITIONAL" else (f"{verdict}（🔴 {verdict_label(verdict)}）" if verdict == "REJECTED" else f"{verdict}（🟠 {verdict_label(verdict)}）")),
+        "VERDICT_LABEL": f"{verdict}（{verdict_emoji} {verdict_label_text}）",
         "VERDICT_SUMMARY": "无阻塞问题。" if not blocking else "存在阻塞问题，暂不建议进入测试。",
         "GATE1_REQUIREMENT": "UT 100%、覆盖率 >= 70%、静态扫描无阻断/严重问题、冒烟 100%",
         "GATE1_STATUS": gate1_status,

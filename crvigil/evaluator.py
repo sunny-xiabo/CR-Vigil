@@ -46,7 +46,7 @@ def has_ci_data(ci: dict[str, Any]) -> bool:
 
 def resolve_ci_mode(pr: dict[str, Any]) -> str:
     raw_mode = str(pr.get("ci_mode") or "auto").lower()
-    if raw_mode not in {"enabled", "disabled", "auto"}:
+    if raw_mode not in {"enabled", "disabled", "auto", "collect_error"}:
         raw_mode = "auto"
     if raw_mode == "auto":
         return "enabled" if has_ci_data(pr.get("ci", {})) else "disabled"
@@ -56,6 +56,17 @@ def resolve_ci_mode(pr: dict[str, Any]) -> str:
 def evaluate_gate_1(pr: dict[str, Any], blocking_reasons: list[str]) -> dict[str, Any]:
     ci = pr.get("ci", {})
     mode = resolve_ci_mode(pr)
+    if mode == "collect_error":
+        blocking_reasons.append("门禁一：CI 数据采集失败（GitLab API 异常），无法完成质量门禁评估")
+        return {
+            "status": "FAIL",
+            "details": {
+                "unit_test": "FAIL",
+                "incremental_coverage": "FAIL",
+                "static_scan": "FAIL",
+                "smoke_test": "FAIL",
+            },
+        }
     if mode == "disabled":
         return {
             "status": "N/A",
@@ -76,14 +87,19 @@ def evaluate_gate_1(pr: dict[str, Any], blocking_reasons: list[str]) -> dict[str
     unit_rate = number(unit.get("pass_rate"))
     coverage_pct = number(coverage.get("incremental_coverage_pct"))
     coverage_threshold = number(coverage.get("threshold"), 70)
-    blocker_count = integer(scan.get("blocker_count"), -1)
-    critical_count = integer(scan.get("critical_count"), -1)
+    blocker_count = integer(scan.get("blocker_count"), 0)
+    critical_count = integer(scan.get("critical_count"), 0)
+    scan_detected = scan.get("detected")
+    if scan_detected is None:
+        scan_detected = blocker_count >= 0 and critical_count >= 0
+        blocker_count = max(blocker_count, 0)
+        critical_count = max(critical_count, 0)
     smoke_total = integer(smoke.get("total"))
     smoke_rate = number(smoke.get("pass_rate"))
 
     unit_ok = unit_total > 0 and unit_rate == 100
     coverage_ok = coverage_pct >= coverage_threshold
-    static_ok = blocker_count == 0 and critical_count == 0
+    static_ok = not scan_detected or (blocker_count == 0 and critical_count == 0)
     smoke_ok = smoke_total > 0 and smoke_rate == 100
 
     if not unit_ok:
@@ -116,7 +132,9 @@ def evaluate_gate_2(pr: dict[str, Any], blocking_reasons: list[str]) -> dict[str
     ai_declared_ok = ai_pct == 0 or bool(ai_usage.get("declared"))
     reviewer_ok = bool(reviewer) and reviewer != author and reviewer_level in SENIOR_LEVELS
     comments_ok = integer(review.get("substantive_comments")) >= 1
-    checklist_ok = all(checklist.get(key) is True for key in CHECKLIST_KEYS)
+    checklist_values = [checklist.get(key) for key in CHECKLIST_KEYS]
+    checklist_all_none = all(v is None for v in checklist_values)
+    checklist_ok = not checklist_all_none and all(v is True for v in checklist_values)
 
     if not ai_declared_ok:
         blocking_reasons.append(f"门禁二：AI 使用占比 {ai_pct:g}%，但 PR 中未完成 AI 声明")
@@ -129,7 +147,9 @@ def evaluate_gate_2(pr: dict[str, Any], blocking_reasons: list[str]) -> dict[str
             blocking_reasons.append(f"门禁二：审查人 {reviewer} 级别为 {reviewer_level or '未知'}，未达到 senior/staff")
     if not comments_ok:
         blocking_reasons.append("门禁二：实质性审查评论数量少于 1 条")
-    if not checklist_ok:
+    if checklist_all_none:
+        blocking_reasons.append("门禁二：AI Code Review Checklist 数据未采集，无法判定")
+    elif not checklist_ok:
         missing = [key.upper().replace("_", "-") for key in CHECKLIST_KEYS if checklist.get(key) is not True]
         blocking_reasons.append(f"门禁二：AI Code Review Checklist 未完成：{', '.join(missing)}")
 
@@ -137,7 +157,7 @@ def evaluate_gate_2(pr: dict[str, Any], blocking_reasons: list[str]) -> dict[str
         "ai_declared": pass_fail(ai_declared_ok),
         "reviewer_qualified": pass_fail(reviewer_ok),
         "substantive_comments": pass_fail(comments_ok),
-        "checklist_complete": pass_fail(checklist_ok),
+        "checklist_complete": "N/A" if checklist_all_none else pass_fail(checklist_ok),
     }
 
     primary_ok = all(value == "PASS" for value in details.values())

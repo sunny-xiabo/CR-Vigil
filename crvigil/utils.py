@@ -1,10 +1,26 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
+_SOURCE_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _resolve_root() -> Path:
+    env = os.environ.get("CRVIGIL_ROOT")
+    if env:
+        return Path(env).resolve()
+    cwd = Path.cwd()
+    if (cwd / "cr-vigil.yml").exists() or (cwd / "data" / "pr-registry.json").exists():
+        return cwd
+    if (_SOURCE_ROOT / "cr-vigil.yml").exists():
+        return _SOURCE_ROOT
+    return cwd
+
+
+ROOT = _resolve_root()
 
 
 def now_iso() -> str:

@@ -72,11 +72,15 @@ def parse_checklist(section: str) -> dict[str, bool | None]:
 
 
 def parse_static_scan(section: str) -> dict[str, Any]:
+    blocker = int(first_number(field(section, "阻断性问题"), 0))
+    critical = int(first_number(field(section, "严重问题"), 0))
+    has_scan_data = bool(field(section, "阻断性问题") or field(section, "严重问题") or field(section, "工具"))
     return {
         "tool": clean_value(field(section, "工具", "SonarQube")) or "SonarQube",
-        "blocker_count": int(first_number(field(section, "阻断性问题"), 0)),
-        "critical_count": int(first_number(field(section, "严重问题"), 0)),
+        "blocker_count": blocker,
+        "critical_count": critical,
         "warning_count": int(first_number(field(section, "警告"), 0)),
+        "detected": has_scan_data,
     }
 
 

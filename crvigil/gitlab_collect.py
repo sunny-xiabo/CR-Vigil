@@ -119,7 +119,9 @@ class GitLabClient:
 
 
 def parse_ai_declaration(description: str) -> dict[str, Any]:
-    declared = bool(re.search(r"AI.*(辅助|声明|使用|占比|生成)", description, re.I))
+    negated = bool(re.search(r"(不涉及|未使用|没有使用|未借助|不包含|未利用|无 AI|未 AI|No AI|Without AI).*AI|AI.*(不涉及|未使用|没有使用|未借助|不包含|未利用|未参与)", description, re.I))
+    positive = bool(re.search(r"AI.*(辅助|声明|使用|占比|生成)|(辅助|声明|使用|占比|生成).*AI", description, re.I)) and not negated
+    declared = positive
     percentage = 0
     used: bool | str = "unknown"
     tools = "未知"
@@ -170,13 +172,13 @@ def collect_ci(client: GitLabClient, project_id: str, iid: str) -> tuple[str, di
         "pipeline_url": "",
         "unit_test": {"total": 0, "passed": 0, "failed": 0, "pass_rate": 0},
         "coverage": {"incremental_coverage_pct": 0, "threshold": 70},
-        "static_scan": {"blocker_count": -1, "critical_count": -1, "warning_count": 0, "tool": "sonar"},
+        "static_scan": {"blocker_count": 0, "critical_count": 0, "warning_count": 0, "tool": "sonar", "detected": False},
         "smoke_test": {"total": 0, "passed": 0, "failed": 0, "pass_rate": 0},
     }
     try:
         pipelines = client.get_paginated(f"/projects/{project_id}/merge_requests/{iid}/pipelines")
     except GitLabCollectError:
-        return "disabled", ci
+        return "collect_error", ci
     if not pipelines:
         return "disabled", ci
 
@@ -189,7 +191,7 @@ def collect_ci(client: GitLabClient, project_id: str, iid: str) -> tuple[str, di
     try:
         jobs = client.get_paginated(f"/projects/{project_id}/pipelines/{pipeline_id}/jobs")
     except GitLabCollectError:
-        return "enabled", ci
+        return "collect_error", ci
 
     patterns = job_patterns()
     for job in jobs:
@@ -207,6 +209,7 @@ def collect_ci(client: GitLabClient, project_id: str, iid: str) -> tuple[str, di
                 elif pipeline.get("coverage"):
                     ci["coverage"]["incremental_coverage_pct"] = float(str(pipeline["coverage"]).rstrip("%"))
         if re.search(patterns["static_scan"], name, re.I):
+            ci["static_scan"]["detected"] = True
             if status == "success":
                 ci["static_scan"]["blocker_count"] = 0
                 ci["static_scan"]["critical_count"] = 0
@@ -272,7 +275,7 @@ def collect_review(client: GitLabClient, project_id: str, iid: str, author: str)
     if mapped is not None:
         level = mapped
     else:
-        level = "senior" if approved_at else "junior"
+        level = "unknown"
     return {
         "reviewer": reviewer,
         "reviewer_level": level,

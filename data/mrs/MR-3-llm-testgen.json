@@ -51,10 +51,11 @@
       "threshold": 70
     },
     "static_scan": {
-      "blocker_count": -1,
-      "critical_count": -1,
+      "blocker_count": 0,
+      "critical_count": 0,
       "warning_count": 0,
-      "tool": "sonar"
+      "tool": "sonar",
+      "detected": false
     },
     "smoke_test": {
       "total": 0,

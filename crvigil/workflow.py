@@ -67,7 +67,6 @@ def evaluate_one(registry_path: Path, pr_id: str, *, write: bool = True, config:
                 record_path=registry["prs"][index].get("record_path"),
             )
             save_registry(registry_path, registry)
-            result = evaluate_pr(registry["prs"][index])
     return result
 
 
@@ -165,6 +164,43 @@ def sync_summary(pull: dict[str, Any], push: dict[str, Any]) -> str:
     return "unknown"
 
 
+def _workflow_setup(registry_path: Path, no_sync: bool, config_path: Path | None) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    config = load_config(config_path)
+    pull = sync_pull(no_sync)
+    stage0 = validate_json_file(registry_path, repair=True, write=True) if registry_path.exists() else {"valid": True}
+    return config, pull, stage0
+
+
+def _workflow_finish(
+    registry_path: Path,
+    config: dict[str, Any],
+    no_sync: bool,
+    pull: dict[str, Any],
+    stage0: dict[str, Any],
+    command: str,
+    commit_message: str,
+    stage2: dict[str, Any],
+    **extra: Any,
+) -> dict[str, Any]:
+    registry = load_registry(registry_path)
+    workspace_root = workspace_root_for_registry(registry_path)
+    snapshot_path = write_daily_snapshot(registry, config, root=workspace_root)
+    removed_snapshots = cleanup_snapshots(config, root=workspace_root)
+    push = sync_push(commit_message, no_sync, retry=sync_int(config, "push_retry", 1))
+    push_ok = bool(push.get("skipped") or push.get("ok", False))
+    result: dict[str, Any] = {
+        "ok": push_ok,
+        "command": command,
+        "sync_status": sync_summary(pull, push),
+        "stage0_json_check": stage0,
+        "stage1_5_snapshot": {"snapshot_path": str(snapshot_path), "removed_snapshots": [str(path) for path in removed_snapshots]},
+        "stage2": stage2,
+        "stage3": {"pull": pull, "push": push},
+    }
+    result.update(extra)
+    return result
+
+
 def admit(
     url: str,
     registry_path: Path,
@@ -173,45 +209,24 @@ def admit(
     no_sync: bool = False,
     config_path: Path | None = None,
 ) -> dict[str, Any]:
-    config = load_config(config_path)
-    pull = sync_pull(no_sync)
-    stage0 = validate_json_file(registry_path, repair=True, write=True) if registry_path.exists() else {"valid": True}
+    config, pull, stage0 = _workflow_setup(registry_path, no_sync, config_path)
     collected = collect_mr(url, registry_path)
     evaluation = evaluate_one(registry_path, collected["pr_id"], write=True, config=config)
     registry = load_registry(registry_path)
-    workspace_root = workspace_root_for_registry(registry_path)
-    snapshot_path = write_daily_snapshot(registry, config, root=workspace_root)
-    removed_snapshots = cleanup_snapshots(config, root=workspace_root)
     report_path = render_admission(registry, collected["pr_id"], output_root, config=config)
-    append_pr_event(
-        workspace_root,
-        collected["pr_id"],
-        "report_rendered",
+    workspace_root = workspace_root_for_registry(registry_path)
+    append_pr_event(workspace_root, collected["pr_id"], "report_rendered", command="admit", verdict=evaluation["verdict"], report_path=str(report_path))
+    return _workflow_finish(
+        registry_path, config, no_sync, pull, stage0,
         command="admit",
+        commit_message=f"chore：同步 {collected['pr_id']} 提测评估（{evaluation['verdict']}）",
+        stage2={"report_path": str(report_path)},
+        stage1=evaluation,
+        pr_id=collected["pr_id"],
         verdict=evaluation["verdict"],
         report_path=str(report_path),
-        snapshot_path=str(snapshot_path),
+        blocking_reasons=evaluation["blocking_reasons"],
     )
-    push = sync_push(
-        f"chore：同步 {collected['pr_id']} 提测评估（{evaluation['verdict']}）",
-        no_sync,
-        retry=sync_int(config, "push_retry", 1),
-    )
-    push_ok = bool(push.get("skipped") or push.get("ok", False))
-    return {
-        "ok": push_ok,
-        "command": "admit",
-        "sync_status": sync_summary(pull, push),
-        "stage0_json_check": stage0,
-        "stage1": evaluation,
-        "stage1_5_snapshot": {"snapshot_path": str(snapshot_path), "removed_snapshots": [str(path) for path in removed_snapshots]},
-        "stage2": {"report_path": str(report_path)},
-        "stage3": {"pull": pull, "push": push},
-        "pr_id": collected["pr_id"],
-        "verdict": evaluation["verdict"],
-        "report_path": str(report_path),
-        "blocking_reasons": evaluation["blocking_reasons"],
-    }
 
 
 def admit_file(
@@ -222,46 +237,24 @@ def admit_file(
     no_sync: bool = False,
     config_path: Path | None = None,
 ) -> dict[str, Any]:
-    config = load_config(config_path)
-    pull = sync_pull(no_sync)
-    stage0 = validate_json_file(registry_path, repair=True, write=True) if registry_path.exists() else {"valid": True}
+    config, pull, stage0 = _workflow_setup(registry_path, no_sync, config_path)
     collected = collect_file(file_path, registry_path)
     evaluations = [evaluate_one(registry_path, pr_id, write=True, config=config) for pr_id in collected["pr_ids"]]
     registry = load_registry(registry_path)
-    workspace_root = workspace_root_for_registry(registry_path)
-    snapshot_path = write_daily_snapshot(registry, config, root=workspace_root)
-    removed_snapshots = cleanup_snapshots(config, root=workspace_root)
     report_paths = [render_admission(registry, pr_id, output_root, config=config) for pr_id in collected["pr_ids"]]
-    verdicts = {evaluation["pr_id"]: evaluation["verdict"] for evaluation in evaluations}
+    workspace_root = workspace_root_for_registry(registry_path)
     for report_path, evaluation in zip(report_paths, evaluations):
-        append_pr_event(
-            workspace_root,
-            str(evaluation["pr_id"]),
-            "report_rendered",
-            command="admit-file",
-            verdict=evaluation["verdict"],
-            report_path=str(report_path),
-            snapshot_path=str(snapshot_path),
-        )
-    push = sync_push(
-        f"chore：同步文件提测评估（{collected['count']} 个 PR）",
-        no_sync,
-        retry=sync_int(config, "push_retry", 1),
+        append_pr_event(workspace_root, str(evaluation["pr_id"]), "report_rendered", command="admit-file", verdict=evaluation["verdict"], report_path=str(report_path))
+    return _workflow_finish(
+        registry_path, config, no_sync, pull, stage0,
+        command="admit-file",
+        commit_message=f"chore：同步文件提测评估（{collected['count']} 个 PR）",
+        stage2={"report_paths": [str(path) for path in report_paths]},
+        stage1={"source": collected["source"], "count": collected["count"], "evaluations": evaluations},
+        pr_ids=collected["pr_ids"],
+        verdicts={e["pr_id"]: e["verdict"] for e in evaluations},
+        report_paths=[str(path) for path in report_paths],
     )
-    push_ok = bool(push.get("skipped") or push.get("ok", False))
-    return {
-        "ok": push_ok,
-        "command": "admit-file",
-        "sync_status": sync_summary(pull, push),
-        "stage0_json_check": stage0,
-        "stage1": {"source": collected["source"], "count": collected["count"], "evaluations": evaluations},
-        "stage1_5_snapshot": {"snapshot_path": str(snapshot_path), "removed_snapshots": [str(path) for path in removed_snapshots]},
-        "stage2": {"report_paths": [str(path) for path in report_paths]},
-        "stage3": {"pull": pull, "push": push},
-        "pr_ids": collected["pr_ids"],
-        "verdicts": verdicts,
-        "report_paths": [str(path) for path in report_paths],
-    }
 
 
 def digest(
@@ -271,39 +264,21 @@ def digest(
     no_sync: bool = False,
     config_path: Path | None = None,
 ) -> dict[str, Any]:
-    config = load_config(config_path)
-    pull = sync_pull(no_sync)
-    stage0 = validate_json_file(registry_path, repair=True, write=True)
+    config, pull, stage0 = _workflow_setup(registry_path, no_sync, config_path)
     evaluations = evaluate_open_prs(registry_path, config=config)
     registry = load_registry(registry_path)
     workspace_root = workspace_root_for_registry(registry_path)
-    snapshot_path = write_daily_snapshot(registry, config, root=workspace_root)
-    removed_snapshots = cleanup_snapshots(config, root=workspace_root)
     snapshot_registry = {"updated_at": registry.get("updated_at"), "prs": registry.get("prs", [])}
     report_path = render_digest(snapshot_registry, output_root, config=config)
-    append_event(
-        workspace_root,
-        {
-            "event": "report_rendered",
-            "command": "digest",
-            "report_path": str(report_path),
-            "snapshot_path": str(snapshot_path),
-            "evaluated_count": len(evaluations),
-        },
+    append_event(workspace_root, {"event": "report_rendered", "command": "digest", "report_path": str(report_path), "evaluated_count": len(evaluations)})
+    return _workflow_finish(
+        registry_path, config, no_sync, pull, stage0,
+        command="digest",
+        commit_message="chore：同步 CR-Vigil 日报",
+        stage1_count=len(evaluations),
+        stage2={"report_path": str(report_path)},
+        report_path=str(report_path),
     )
-    push = sync_push("chore：同步 CR-Vigil 日报", no_sync, retry=sync_int(config, "push_retry", 1))
-    push_ok = bool(push.get("skipped") or push.get("ok", False))
-    return {
-        "ok": push_ok,
-        "command": "digest",
-        "sync_status": sync_summary(pull, push),
-        "stage0_json_check": stage0,
-        "stage1_count": len(evaluations),
-        "stage1_5_snapshot": {"snapshot_path": str(snapshot_path), "removed_snapshots": [str(path) for path in removed_snapshots]},
-        "stage2": {"report_path": str(report_path)},
-        "stage3": {"pull": pull, "push": push},
-        "report_path": str(report_path),
-    }
 
 
 def trend(
@@ -313,39 +288,19 @@ def trend(
     no_sync: bool = False,
     config_path: Path | None = None,
 ) -> dict[str, Any]:
-    config = load_config(config_path)
-    pull = sync_pull(no_sync)
-    stage0 = validate_json_file(registry_path, repair=True, write=True)
+    config, pull, stage0 = _workflow_setup(registry_path, no_sync, config_path)
     registry = load_registry(registry_path)
     workspace_root = workspace_root_for_registry(registry_path)
     snapshots = load_week_daily_snapshots(root=workspace_root)
     trend_registry = registry_from_snapshots(snapshots, registry)
     weekly_snapshot = write_weekly_snapshot(trend_registry, config, root=workspace_root)
-    removed_snapshots = cleanup_snapshots(config, root=workspace_root)
     report_path = render_trend(trend_registry, output_root, config=config)
-    append_event(
-        workspace_root,
-        {
-            "event": "report_rendered",
-            "command": "trend",
-            "report_path": str(report_path),
-            "snapshot_path": str(weekly_snapshot),
-            "daily_snapshot_count": len(snapshots),
-        },
+    append_event(workspace_root, {"event": "report_rendered", "command": "trend", "report_path": str(report_path), "snapshot_path": str(weekly_snapshot), "daily_snapshot_count": len(snapshots)})
+    return _workflow_finish(
+        registry_path, config, no_sync, pull, stage0,
+        command="trend",
+        commit_message="chore：同步 CR-Vigil 周报",
+        stage1_5_snapshot_detail={"snapshot_path": str(weekly_snapshot), "daily_snapshot_count": len(snapshots)},
+        stage2={"report_path": str(report_path)},
+        report_path=str(report_path),
     )
-    push = sync_push("chore：同步 CR-Vigil 周报", no_sync, retry=sync_int(config, "push_retry", 1))
-    push_ok = bool(push.get("skipped") or push.get("ok", False))
-    return {
-        "ok": push_ok,
-        "command": "trend",
-        "sync_status": sync_summary(pull, push),
-        "stage0_json_check": stage0,
-        "stage1_5_snapshot": {
-            "snapshot_path": str(weekly_snapshot),
-            "daily_snapshot_count": len(snapshots),
-            "removed_snapshots": [str(path) for path in removed_snapshots],
-        },
-        "stage2": {"report_path": str(report_path)},
-        "stage3": {"pull": pull, "push": push},
-        "report_path": str(report_path),
-    }
