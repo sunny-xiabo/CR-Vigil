@@ -1,0 +1,35 @@
+storage:
+  history_limit_per_mr: 50
+  daily_snapshot_retention_days: 30
+  weekly_snapshot_retention_weeks: 12
+
+sync:
+  push_retry: 1
+
+reports:
+  admission:
+    profile: detailed
+    sections:
+      gate_details: true
+      risk_analysis: true
+      recommendations: true
+  daily:
+    profile: standard
+    sections:
+      summary: true
+      admitted_prs: true
+      blocked_prs: true
+      pending_prs: false
+      gate_distribution: true
+      detailed_gate_reasons: false
+      action_items: true
+  weekly:
+    profile: standard
+    sections:
+      summary: true
+      admission_trend: true
+      gate_trend: true
+      ai_usage: true
+      reviewer_stats: true
+      recurrence: true
+      recommendations: true

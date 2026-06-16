@@ -1,0 +1,316 @@
+{
+  "pr_id": "PR-001",
+  "title": "feat: add user authentication module with JWT support",
+  "author": "zhangsan",
+  "url": "https://github.com/example/repo/pull/001",
+  "created_at": "2026-06-10T10:00:00+08:00",
+  "updated_at": "2026-06-11T15:30:00+08:00",
+  "status": "open",
+  "ci_mode": "auto",
+  "ai_usage": {
+    "used": true,
+    "declared": true,
+    "percentage": 45,
+    "tools": [
+      "GitHub Copilot",
+      "ChatGPT"
+    ],
+    "modules": [
+      "JWT token generation",
+      "Password hashing helper",
+      "Login rate limiter"
+    ]
+  },
+  "review": {
+    "reviewer": "lisi",
+    "reviewer_level": "senior",
+    "substantive_comments": 3,
+    "review_approved_at": "2026-06-11T15:30:00+08:00",
+    "checklist": {
+      "ck_01": true,
+      "ck_02": true,
+      "ck_03": true,
+      "ck_04": true,
+      "ck_05": true,
+      "ck_06": true,
+      "ck_07": true,
+      "ck_08": true,
+      "ck_09": true,
+      "ck_10": true,
+      "ck_11": true,
+      "ck_12": true
+    }
+  },
+  "ci": {
+    "pipeline_url": "https://ci.example.com/jobs/001",
+    "unit_test": {
+      "total": 156,
+      "passed": 156,
+      "failed": 0,
+      "pass_rate": 100
+    },
+    "coverage": {
+      "incremental_coverage_pct": 82.5,
+      "threshold": 70
+    },
+    "static_scan": {
+      "blocker_count": 0,
+      "critical_count": 0,
+      "warning_count": 5,
+      "tool": "sonar"
+    },
+    "smoke_test": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "pass_rate": 100
+    }
+  },
+  "declaration": {
+    "ci_proof_provided": true,
+    "ci_proof_url": "https://ci.example.com/jobs/001",
+    "cr_approval_link": "https://github.com/example/repo/pull/001#review-12345",
+    "self_inspection": {
+      "submitted": true,
+      "signed_by": "zhangsan",
+      "signed_date": "2026-06-12T09:00:00+08:00",
+      "checks": {
+        "ci_passed": true,
+        "cr_completed": true,
+        "boundary_verified": true,
+        "self_tested": true,
+        "no_known_blockers": true
+      }
+    }
+  },
+  "gates": {
+    "gate_1": {
+      "status": "PASS",
+      "details": {
+        "unit_test": "PASS",
+        "incremental_coverage": "PASS",
+        "static_scan": "PASS",
+        "smoke_test": "PASS"
+      }
+    },
+    "gate_2": {
+      "status": "PASS",
+      "details": {
+        "ai_declared": "PASS",
+        "reviewer_qualified": "PASS",
+        "substantive_comments": "PASS",
+        "checklist_complete": "PASS",
+        "review_timeliness": "PASS"
+      }
+    },
+    "gate_3": {
+      "status": "PASS",
+      "details": {
+        "ci_proof": "PASS",
+        "cr_link": "PASS",
+        "self_inspection": "PASS"
+      }
+    },
+    "gate_4": {
+      "status": "READY",
+      "details": {
+        "records_available": true
+      }
+    }
+  },
+  "gates_summary": {
+    "gate_1": "PASS",
+    "gate_2": "PASS",
+    "gate_3": "PASS",
+    "gate_4": "READY"
+  },
+  "verdict": "ADMITTED",
+  "blocking_reasons": [],
+  "ai_percentage": 45.0,
+  "reviewer": "lisi",
+  "violations": 0,
+  "last_updated": "2026-06-16T15:10:57+08:00",
+  "history": [
+    {
+      "timestamp": "2026-06-10T10:00:00+08:00",
+      "event": "created",
+      "details": "PR 创建"
+    },
+    {
+      "timestamp": "2026-06-11T15:30:00+08:00",
+      "event": "updated",
+      "details": "lisi 批准 CR（3 条实质性评论）"
+    },
+    {
+      "timestamp": "2026-06-12T09:00:00+08:00",
+      "event": "updated",
+      "details": "zhangsan 签署自检声明"
+    },
+    {
+      "timestamp": "2026-06-12T09:30:00+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T15:57:01+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T15:57:01+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T16:28:11+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T16:29:22+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T16:30:13+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T16:38:02+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T16:54:44+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T17:02:28+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-15T17:20:52+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T09:08:14+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T09:10:07+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T09:10:46+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T09:11:53+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:09:13+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:09:29+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:11:35+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:11:53+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:13:39+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:35:21+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:35:54+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:36:31+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:37:38+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:40:42+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:44:25+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:47:34+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T10:49:39+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T11:05:16+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T14:43:49+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T14:51:38+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T14:56:22+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T15:07:50+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    },
+    {
+      "timestamp": "2026-06-16T15:10:57+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+    }
+  ],
+  "record_path": "data/mrs/PR-001.json"
+}

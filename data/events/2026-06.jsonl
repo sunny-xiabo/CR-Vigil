@@ -1,0 +1,19 @@
+{"event": "gate_evaluated", "pr_id": "PR-001", "record_path": "data/mrs/PR-001.json", "timestamp": "2026-06-16T14:51:38+08:00", "verdict": "ADMITTED"}
+{"event": "gate_evaluated", "pr_id": "PR-002", "record_path": "data/mrs/PR-002.json", "timestamp": "2026-06-16T14:51:38+08:00", "verdict": "REJECTED"}
+{"event": "gate_evaluated", "pr_id": "PR-003", "record_path": "data/mrs/PR-003.json", "timestamp": "2026-06-16T14:51:38+08:00", "verdict": "CONDITIONAL"}
+{"command": "digest", "evaluated_count": 3, "event": "report_rendered", "report_path": "/tmp/crvigil-p4-digest/digests/daily-digest-2026-06-16.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/daily-2026-06-16.json", "timestamp": "2026-06-16T14:51:38+08:00"}
+{"event": "gate_evaluated", "pr_id": "PR-001", "record_path": "data/mrs/PR-001.json", "timestamp": "2026-06-16T14:56:22+08:00", "verdict": "ADMITTED"}
+{"event": "gate_evaluated", "pr_id": "PR-002", "record_path": "data/mrs/PR-002.json", "timestamp": "2026-06-16T14:56:22+08:00", "verdict": "REJECTED"}
+{"event": "gate_evaluated", "pr_id": "PR-003", "record_path": "data/mrs/PR-003.json", "timestamp": "2026-06-16T14:56:22+08:00", "verdict": "CONDITIONAL"}
+{"command": "digest", "evaluated_count": 3, "event": "report_rendered", "report_path": "/tmp/crvigil-p5-digest/digests/daily-digest-2026-06-16.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/daily-2026-06-16.json", "timestamp": "2026-06-16T14:56:22+08:00"}
+{"command": "trend", "daily_snapshot_count": 2, "event": "report_rendered", "report_path": "/tmp/crvigil-p5-trend/trends/weekly-trend-2026-06-15.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/weekly-2026-W25.json", "timestamp": "2026-06-16T14:56:22+08:00"}
+{"event": "gate_evaluated", "pr_id": "PR-001", "record_path": "data/mrs/PR-001.json", "timestamp": "2026-06-16T15:07:50+08:00", "verdict": "ADMITTED"}
+{"event": "gate_evaluated", "pr_id": "PR-002", "record_path": "data/mrs/PR-002.json", "timestamp": "2026-06-16T15:07:50+08:00", "verdict": "REJECTED"}
+{"event": "gate_evaluated", "pr_id": "PR-003", "record_path": "data/mrs/PR-003.json", "timestamp": "2026-06-16T15:07:50+08:00", "verdict": "CONDITIONAL"}
+{"command": "digest", "evaluated_count": 3, "event": "report_rendered", "report_path": "/tmp/crvigil-index-digest/digests/daily-digest-2026-06-16.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/daily-2026-06-16.json", "timestamp": "2026-06-16T15:07:50+08:00"}
+{"command": "trend", "daily_snapshot_count": 2, "event": "report_rendered", "report_path": "/tmp/crvigil-index-trend/trends/weekly-trend-2026-06-15.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/weekly-2026-W25.json", "timestamp": "2026-06-16T15:08:01+08:00"}
+{"event": "gate_evaluated", "pr_id": "PR-001", "record_path": "data/mrs/PR-001.json", "timestamp": "2026-06-16T15:10:57+08:00", "verdict": "ADMITTED"}
+{"event": "gate_evaluated", "pr_id": "PR-002", "record_path": "data/mrs/PR-002.json", "timestamp": "2026-06-16T15:10:57+08:00", "verdict": "REJECTED"}
+{"event": "gate_evaluated", "pr_id": "PR-003", "record_path": "data/mrs/PR-003.json", "timestamp": "2026-06-16T15:10:57+08:00", "verdict": "CONDITIONAL"}
+{"command": "digest", "evaluated_count": 3, "event": "report_rendered", "report_path": "/tmp/crvigil-final-index-digest/digests/daily-digest-2026-06-16.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/daily-2026-06-16.json", "timestamp": "2026-06-16T15:10:57+08:00"}
+{"command": "trend", "daily_snapshot_count": 2, "event": "report_rendered", "report_path": "/tmp/crvigil-final-index-trend-2/trends/weekly-trend-2026-06-15.md", "snapshot_path": "/Users/xiabo/SoftwareTest/CarbonPy/CR-Vigil/data/snapshots/weekly-2026-W25.json", "timestamp": "2026-06-16T15:11:44+08:00"}

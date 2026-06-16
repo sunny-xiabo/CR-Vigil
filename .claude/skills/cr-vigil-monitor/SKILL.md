@@ -1,386 +1,158 @@
 ---
 name: cr-vigil-monitor
-version: 1.1.0
-last_updated: 2026-06-12
+version: 1.2.0
+last_updated: 2026-06-15
 description: >
-  Generate structured admission reports, daily digests, and weekly trend reports
-  for the testing team by evaluating PRs against the 4-gate quality control system.
-  Trigger when user asks for "CR-Vigil", "提测准入报告", "测试准入", "质量门禁报告",
-  "PR monitoring report", "testing admission", "提测日报", "测试周报", "CR监控报告",
-  or any request to check if a PR can enter testing.
+  Skill-driven CR-Vigil workflow for GitLab MR testing admission, daily digests,
+  and weekly trend reports. The Skill orchestrates collection, deterministic
+  gate evaluation, Markdown report rendering, and team Git synchronization.
+  Trigger when user asks for "CR-Vigil", "提测准入报告", "测试准入",
+  "质量门禁报告", "提测日报", "测试周报", "CR监控报告", or whether an MR can
+  enter testing.
 ---
 
 # CR-Vigil Monitor Skill
 
-## 概述
+## 定位
 
-本 Skill 基于《AI 代码质量管控方案》定义的四道门禁体系，自动评估 PR 的测试准入条件，并生成结构化报告供测试团队使用。
+本 Skill 是 CR-Vigil 的唯一用户入口。用户继续使用 `/cr-vigil-monitor --admit|--admit-file|--digest|--trend`，不需要学习独立 CLI。
 
-四道门禁：
-1. CI 质量红线（自动化强制）
-2. AI 代码声明 + 人工 Code Review
-3. 测试准入声明
-4. 故障追溯倒查（不阻断提测，仅用于事后问责）
+Skill 负责流程编排、异常解释和中文摘要；确定性脚本负责数据采集后的门禁评估和报告生成。
 
-所有报告的核心结论始终放在最前面，直接回答测试团队最关心的问题：**这个 PR 能不能提测？**
+## 支持命令
 
-## 适用场景
-
-当用户提到以下关键词时启用本 Skill：
-- 生成提测准入报告 / 测试准入判断 / 质量门禁检查
-- 生成每日汇总 / 日报 / 今日提测清单
-- 生成周报 / 趋势报告 / 违规统计
-- 传入 GitLab MR 链接要求分析
-
-## 调用方式
-
-### 方式一：GitLab MR 链接（主力用法）
-
-```
-/cr-vigil-monitor --admit <MR链接>
-```
-
-示例：
-```
-/cr-vigil-monitor --admit https://gitlab.example.com/your-group/your-project/-/merge_requests/27
-```
-
-Skill 会自动调用 `scripts/collect-mr-data.sh` 从 GitLab API 采集 MR 数据，然后评估门禁并生成报告。
-
-### 方式二：Markdown 文件（兼容旧用法）
-
-```
-/cr-vigil-monitor --admit-file <文件路径>
-```
-
-适用于测试、演示、或无法访问 GitLab API 的场景。数据格式参考 `assets/sample-pr.md`。
-
-### 方式三：每日汇总
-
-```
+```bash
+/cr-vigil-monitor --admit <GitLab MR 链接>
+/cr-vigil-monitor --admit-file <Markdown 文件路径>
 /cr-vigil-monitor --digest
-```
-
-从 `data/pr-registry.json` 读取所有活跃 PR，生成当日的全局状态报告。
-
-### 方式四：周趋势报告
-
-```
 /cr-vigil-monitor --trend
 ```
 
-从 `data/pr-registry.json` 和历史报告中计算趋势，生成周报。
+## 内部脚本契约
 
-## 工作流
-
-### 第一步：识别报告类型和数据来源
-
-根据用户输入判断报告类型：
-- 用户提供了 URL（包含 `gitlab` 和 `merge_requests`）→ 提测准入报告，Git API 数据源
-- 用户提供了文件路径（以 `.md` 结尾）→ 提测准入报告，文件数据源
-- 用户要求日报或汇总 → 每日汇总报告
-- 用户要求周报或趋势 → 周趋势报告
-
-### 第二步：采集 PR 数据
-
-**Git API 模式（主力）**：
-
-1. 调用 `scripts/collect-mr-data.sh <MR_URL>` 执行数据采集
-2. 该脚本会：
-   a. 解析 MR URL，提取 GitLab 实例地址、项目路径、MR 编号
-   b. 调用 GitLab API 获取 MR 元信息（标题、作者、描述、日期）
-   c. 从 MR 描述中正则解析 AI 使用声明（占比、工具、模块）
-   d. 调用 Pipelines API 获取 CI 结果（单元测试、覆盖率、静态扫描、冒烟测试）
-   e. 调用 Notes API 获取审查评论（审查人、评论内容、形式主义检测）
-   f. 调用 Approvals API 获取批准状态
-   g. 按标准 JSON Schema 组装数据，写入 `data/pr-registry.json`
-3. 如果脚本返回错误，向用户报告具体原因（Token 未配置、API 无权限、MR 不存在等）
-4. 脚本成功后，从 `data/pr-registry.json` 读取刚写入的 PR 数据
-
-**文件模式（兼容）**：
-
-1. 读取指定的 Markdown 文件
-2. 按 `assets/sample-pr.md` 的格式解析 PR 数据
-3. 映射到标准 JSON Schema
-
-需要提取的数据字段详见 `references/data-schema.md`。
-
-核心字段：
-- PR 元信息（编号、标题、作者、链接、日期）
-- AI 使用声明（是否使用、是否声明、占比、工具、模块）
-- Code Review（审查人、级别、评论、Checklist CK-01 至 CK-12）
-- CI 结果（单元测试通过率、增量覆盖率、阻断/严重问题数、冒烟测试通过率）
-- 测试准入声明（CI 证明、CR 批准链接、自检声明）
-
-如果关键字段缺失（如 CI 结果无法获取、审查人未知），在报告中标注为「待补充」，不影响其他门禁的评估。
-
-### 第三步：逐项评估四道门禁
-
-读取 `references/gate-rules.md` 获取精确的阈值和判定逻辑。逐项评估：
-
-**门禁一：CI 质量红线（自动检测，无需配置）**
-
-评估前先自动判定 CI 模式：
-
-1. 检查 `pr-registry.json` 中的 `ci_mode` 字段
-2. 如果 `ci_mode == "enabled"`：强制评估，CI 数据缺失视为 FAIL
-3. 如果 `ci_mode == "disabled"`：直接标记 N/A，门禁一不参与准入判定
-4. 如果 `ci_mode == "auto"` 或未设置：自动检测
-   - `pipeline_url` 非空 或 `unit_test.total > 0` 或 `smoke_test.total > 0` → 视为 enabled，正常评估
-   - 以上条件全部不满足 → 视为 disabled，标记 N/A
-
-环境变量 `CRVIGIL_CI_MODE` 和 `CRVIGIL_CI_MODE_MAP` 仅用于显式覆盖，绝大多数场景无需设置。Skill 自动判断即可覆盖 95% 以上的实际使用场景。
-
-**仅当 CI 模式最终判定为 enabled 时，执行以下检查：**
-
-| 检查项 | 阈值 | 判定 |
-|--------|------|------|
-| 单元测试通过率 | 100% | =100% → PASS，否则 FAIL |
-| 增量代码覆盖率 | >= 70% | >=70% → PASS，否则 FAIL |
-| 静态扫描阻断问题 | 0 | =0 → PASS，>0 → FAIL |
-| 静态扫描严重问题 | 0 | =0 → PASS，>0 → FAIL |
-| 冒烟测试通过率 | 100% | =100% → PASS，否则 FAIL |
-
-五个检查项全部 PASS → 门禁一通过。任一 FAIL → 门禁一 FAIL。CI 模式为 disabled 时，门禁一直接标记 N/A。
-
-**门禁二：AI 声明 + 人工 Code Review**
-
-| 检查项 | 条件 | 判定 |
-|--------|------|------|
-| AI 使用声明 | AI 占比 > 0% 则必须声明 | 已声明 → PASS，未声明 → FAIL |
-| 审查人资质 | 非作者、资深级别（>= senior） | 满足 → PASS |
-| 实质性评论 | >= 1 条非形式主义评论 | >=1 → PASS，0 → FAIL |
-| Checklist 完成 | 12 项全部勾选 | 12/12 → PASS |
-| 审查时效 | CR 在 24 小时内完成 | <=24h → PASS，超时 → WARN |
-
-前四项全部 PASS → 门禁二通过。如果全部 PASS 但有 WARN（审查超时）→ 门禁二状态为 WARN。任一 FAIL → 门禁二 FAIL。
-
-形式主义检测规则（参考 `references/checklist-12-items.md`）：
-- 仅含 "LGTM"、"Looks Good To Me"、"好的"、"OK"、"没问题"、"Approved"、"通过"、"+1"
-- 去除非技术用语后字符数 < 10
-- 无任何代码引用或技术讨论
-
-Checklist 解析模式兼容性说明：
-- 支持 `- [x]` Markdown 复选框、`已勾选` / `未勾选` 表格项、`✅` / `❌` / `PASS` / `FAIL` / `YES` / `NO` 等多种符号的识别。
-
-审查人级别解析逻辑：
-- 优先从 `data/reviewer-levels.json` 本地映射表读取，如未定义则从 approvals 审批结果推断（若被 approvals 通过则至少为 senior），最后默认为 junior。
-
-
-**门禁三：测试准入声明**
-
-| 材料 | 要求 | 判定 |
+| 命令 | 用途 | 输出 |
 |------|------|------|
-| CI 通过证明 | 流水线链接或截图 | 已提供 → PASS |
-| CR 批准链接 | 可见 Checklist + 评论的 PR 链接 | 已提供 → PASS |
-| AI 自检声明 | 开发签字确认（五项全部确认） | 已提交 → PASS |
+| `python -m crvigil admit <MR_URL>` | 采集、评估并生成单 MR 提测报告 | JSON 摘要 |
+| `python -m crvigil admit-file <FILE_PATH>` | 从 Markdown 文件采集、评估并生成提测报告 | JSON 摘要 |
+| `python -m crvigil digest` | 评估活跃 PR 并生成日报 | JSON 摘要 |
+| `python -m crvigil trend` | 生成周趋势报告 | JSON 摘要 |
+| `python -m crvigil validate --repair --write` | JSON 格式自检与修复 | JSON 校验摘要 |
 
-三项材料全部提供 → 门禁三通过。任一缺失 → 门禁三 FAIL。
+底层脚本仍保留作为 legacy 兼容层，但 Skill 应优先调用 `python -m crvigil`。
 
-**门禁四：故障追溯倒查**
+## JSON 自检与修复
 
-不参与提测准入判定。仅确保 CI 记录、CR 记录、自检声明副本、发布记录在需要时可拉取。
+所有读取 `data/pr-registry.json` 的确定性脚本都会先进行 JSON 格式自检。发现格式异常时，优先尝试可选依赖 `json_repair`；如果本地未安装该依赖，则使用内置轻量修复处理 BOM、首尾空白、对象或数组末尾多余逗号等常见问题。
 
-### 第四步：计算准入判定
-
-```
-// 排除 N/A 门禁，只评估有效门禁
-active_gates = [g for g in [Gate1, Gate2, Gate3] if g.STATUS != N/A]
-
-如果 全部 active_gates 为 PASS:
-    如果 Gate2 == WARN:
-        判定 = CONDITIONAL（有条件通过，需注明风险）
-    否则:
-        判定 = ADMITTED（准予提测）
-如果 任一 active_gate 为 FAIL:
-    判定 = REJECTED（拒绝提测）
-如果 任一 active_gate 为 PENDING:
-    判定 = PENDING（待评估）
-
-// 常见场景
-- Gate1=N/A (无CI), Gate2=PASS, Gate3=PASS → ADMITTED
-- Gate1=N/A (无CI), Gate2=FAIL → REJECTED（门禁二阻塞，与CI无关）
-```
-
-注意：门禁三的 G3-01（CI 通过证明）随门禁一联动。当 CI 模式为 disabled 时，G3-01 同步标记为 N/A，不再要求提供 CI 证明。
-
-收集阻塞原因：
-- 每一项 FAIL：列出具体检查项、阈值、实际值
-- 每一项 WARN：作为已知风险列出
-
-### 第五步：生成并写入报告
-
-根据报告类型，读取对应的模板：
-
-- 准入报告：`assets/admission-report-template.md`
-- 每日汇总：`assets/daily-digest-template.md`
-- 周趋势报告：`assets/weekly-trend-template.md`
-
-用评估结果填充模板：
-- 替换所有 `{PLACEHOLDER}` 占位符
-- 表格行按数据逐行生成
-- 列表项按规则逐条生成
-- 准入判定放在报告最顶部
-
-报告写入路径规范：
-- 准入报告：`reports/admissions/{PR_ID}-admission-{YYYY-MM-DD}.md`
-- 每日汇总：`reports/digests/daily-digest-{YYYY-MM-DD}.md`
-- 周趋势报告：`reports/trends/weekly-trend-{YYYY-MM-DD}.md`
-
-### 第六步：更新注册表并展示摘要
-
-1. 更新 `data/pr-registry.json`：
-   - 如果 PR 已存在，更新记录
-   - 如果 PR 是新的，新增记录
-   - 更新时间戳
-   - 如果是再次拒绝，递增违规计数器
-
-2. 向用户展示简洁摘要：
-   - 报告类型和文件路径
-   - 准入判定（准入报告）或关键统计（日报/周报）
-   - 评估的 PR 数量
-
-3. 团队模式下，自动同步数据：
-   - 调用 `scripts/sync.sh pull` 拉取团队最新数据（在评估前）
-   - 写入报告后，调用 `scripts/sync.sh push "评估: {PR_ID} → {VERDICT}"` 推送到团队仓库
-   - 个人模式下，跳过此步
-
-## 团队协作模式
-
-Skill 支持两种运行模式，通过环境变量切换：
-
-### 团队模式（默认）
+维护人员可手动执行：
 
 ```bash
-export CRVIGIL_MODE=team
+python -m crvigil validate
+python -m crvigil validate --repair --write
 ```
 
-- `data/pr-registry.json` 和 `reports/` 通过 Git 全团队共享
-- Skill 执行时自动 `sync pull` 拉取最新数据，完成后自动 `sync push`
-- 所有测试人员看到同一份 PR 登记表和报告
-- 需要 Git push 权限
+修复失败时必须停止后续阶段，不允许继续生成报告。
 
-### 个人模式
+## 阶段驱动规则
 
-```bash
-export CRVIGIL_MODE=personal
-```
+CR-Vigil 必须按阶段推进，不允许跳过阶段直接生成报告。
 
-- 数据和报告仅保存在本地，不自动推送
-- 适合试用、个人练习、或无 Git 推送权限的场景
-- 如需彻底隔离，取消 `.gitignore` 中 `data/pr-registry.json` 和 `reports/` 的注释
+| 阶段 | 名称 | 完成条件 | 下一步 |
+|------|------|----------|--------|
+| 阶段 1 | 数据采集与门禁评估 | registry 中目标 PR 已写入 `gates`、`gates_summary`、`verdict`、`blocking_reasons`，且门禁状态不再是全量 `PENDING` | 允许进入阶段 2 |
+| 阶段 1.5 | 快照写入 | 当前 registry 已写入 `data/snapshots/daily-YYYY-MM-DD.json` 或 `weekly-YYYY-Www.json` | 报告使用稳定快照 |
+| 阶段 2 | 报告生成 | `python -m crvigil` 成功输出报告路径 | 允许展示摘要并同步 |
+| 阶段 3 | 团队同步与通知 | 团队模式下 `sync push` 成功，或个人模式明确跳过同步 | 向用户输出最终结果 |
 
-### 团队新人上手步骤
+如果阶段 1 未完成，Python 渲染器会拒绝生成单 MR 提测报告、日报和周报。Skill 应先修复采集或评估问题，再进入下一阶段。
 
-```bash
-git clone git@github.com:sunny-xiabo/CR-Vigil.git
-cd CR-Vigil
-export GITLAB_TOKEN="你的token"
-# 默认就是团队模式，无需额外配置
-/cr-vigil-monitor --admit <MR链接>
-# 自动拉取团队数据 → 评估 → 自动推送结果
-```
+当前存储为正式分层模式：`data/pr-registry.json` 是轻量索引，`data/mrs/<PR_ID>.json` 保存单个 MR 完整当前状态，`data/events/YYYY-MM.jsonl` 追加记录采集、评估和报告事件。Skill 不应直接手工编辑这些文件。
 
-## 每日汇总专用逻辑
+## 报告定制
 
-1. 从 `data/pr-registry.json` 读取所有活跃 PR（状态为 open）
-2. 对每个 PR，如果数据自上次评估后有更新，重新评估门禁
-3. 计算聚合统计：活跃总数、准入/阻塞/待评估数量、最常见阻塞门禁、平均 AI 占比
-4. 阻塞 PR 段：列出失败门禁、失败原因、阻塞天数、开发需执行的操作
-5. 生成违规复现预警：对曾被拒绝超过一次的开发者发出警告
+报告内容由 `cr-vigil.yml` 控制。Skill 不应直接改模板内容来临时定制日报/周报；应先修改配置，再运行 `python -m crvigil digest` 或 `python -m crvigil trend`。
 
-## 周趋势报告专用逻辑
+默认策略：
 
-1. 从 `data/pr-registry.json` 和最近 4 周的历史报告读取数据
-2. 计算趋势：本周每日准入率、各门禁违规对比上周、AI 使用趋势、Top 阻塞问题排名
-3. 审查人统计：完成审查数、平均评论数、形式主义事件数
-4. 违规复现追踪：按开发者列出违规次数和升级级别
-5. 与前三周对比，产出 4 周合规趋势表
-6. 根据数据模式生成可操作的建议
+| 报告 | 默认 profile | 详细程度 |
+|------|--------------|----------|
+| 单 MR 提测报告 | detailed | 详细，包含完整门禁细节 |
+| 日报 | standard | 简洁，突出行动项 |
+| 周报 | standard | 中等详细，突出趋势和复盘 |
 
-## 反模式与硬性规则
+## Admit 工作流
 
-生成报告时必须严格遵守以下规则：
+收到 `/cr-vigil-monitor --admit <MR_URL>` 时：
 
-1. 禁用 box-drawing 字符。不使用 ┌ ─ ┐ │ └ ┘ ├ ┤ ┬ ┴ ┼ 等 Unicode 制表符。使用标准 Markdown 表格（`|` 和 `-`）。
-2. 禁用 emoji 和表情符号。状态标记用纯文本：PASS、FAIL、WARN。
-3. 禁用装饰性 ASCII 画。不使用 + - = * 拼成的横幅或边框。
-4. 准入判定必须是报告标题之后的第一项内容。直接回答「能不能提测」。
-5. 判定标签使用：ADMITTED（准予提测）、REJECTED（拒绝提测）、CONDITIONAL（有条件通过）、PENDING（待评估）。不使用彩色圆点或符号。
-6. 所有报告必须是合法的 Markdown 格式，在标准渲染器中正确显示。
-7. 门禁失败时，必须列出具体检查项、阈值和实际值。
-8. 阻塞问题必须具体且可操作——开发者看后应明确知道需要做什么。
-9. 所有报告内容必须使用中文。标题、标签、判定说明、建议、摘要——测试团队阅读的所有文字都必须是中文。技术标识符（PR-001、CK-01、G1-01、ADMITTED 等）和 URL 可以保持英文。
+1. 执行 `python -m crvigil admit <MR_URL>`。
+2. 读取命令输出 JSON，向用户输出中文摘要：判定、阻塞原因、报告路径、同步状态。
 
-## 数据源模式
+## Admit File 工作流
 
-### Git API 模式（默认）
+收到 `/cr-vigil-monitor --admit-file <文件路径>` 时：
 
-传入 GitLab MR 链接时，Skill 调用 `scripts/collect-mr-data.sh` 自动采集数据。需要预先配置环境变量：
+1. 执行 `python -m crvigil admit-file <文件路径>`。
+2. 读取命令输出 JSON，向用户输出文件内 PR 数量、各 PR 判定、报告路径和同步状态。
 
-```bash
-export GITLAB_TOKEN="glpat-xxxx"  # GitLab Personal Access Token
-```
+文件模式与 Git API 模式的门禁评估逻辑必须完全相同。
 
-采集脚本将 GitLab API 返回的数据映射为标准 JSON Schema 并写入 `data/pr-registry.json`。报告生成逻辑不变。
+## Digest 工作流
 
-GitLab API 字段映射详见 `references/gitlab-field-mapping.md`。
+收到 `/cr-vigil-monitor --digest` 时：
 
-### 文件模式（兼容）
+1. 执行 `python -m crvigil digest`。
+2. 读取命令输出 JSON，输出活跃 PR 数、准入数、阻塞数、报告路径。
 
-传入 Markdown 文件路径时，Skill 直接解析文件内容。数据格式参考 `assets/sample-pr.md`。适用于：
-- 本地测试和演示
-- 无法访问 GitLab API 的环境
-- 人工补充数据场景
+## Trend 工作流
 
-文件模式和 API 模式的报告生成逻辑**完全相同**，只是数据来源不同。两种模式产出的 JSON 都写入同一个 `pr-registry.json`。
+收到 `/cr-vigil-monitor --trend` 时：
 
-## 环境配置
+1. 执行 `python -m crvigil trend`。
+2. 读取命令输出 JSON，输出本周 PR 总数、准入率、主要阻塞问题、报告路径。
 
-```bash
-# GitLab 认证（必填，使用 API 模式时需要）
-export GITLAB_TOKEN="glpat-xxxx"
+## 门禁规则来源
 
-# GitLab 实例地址（可选，默认从 MR URL 自动解析）
-export GITLAB_HOST="https://gitlab.example.com"
-
-# 运行模式（可选，默认 team）
-export CRVIGIL_MODE=team      # 团队模式：自动同步 Git
-export CRVIGIL_MODE=personal  # 个人模式：仅本地运行
-
-# CI Job 名称映射（可选，当流水线 Job 命名不标准时使用）
-export CRVIGIL_JOB_MAPPING='{"unit_test":"run-tests","coverage":"coverage-report","static_scan":"sonar","smoke_test":"smoke"}'
-```
-
-## 定时调度
-
-使用 `/loop` 命令设置定时自动生成：
-
-每日汇总（每 24 小时）：
-```
-/loop 24h /cr-vigil-monitor --digest
-```
-
-周趋势报告（每 7 天）：
-```
-/loop 7d /cr-vigil-monitor --trend
-```
-
-如果需要精确时间（如每日 8:57 赶在晨会前），可使用 CronCreate。
-
-## 参考文件
+门禁判定以确定性脚本为准，规则来源为：
 
 | 文件 | 用途 |
 |------|------|
-| `references/data-schema.md` | 标准 PR 数据 JSON Schema |
-| `references/gate-rules.md` | 四道门禁的完整规则与判定逻辑 |
+| `references/gate-rules.md` | 四道门禁规则与判定依据 |
+| `references/data-schema.md` | 标准 PR 数据结构 |
 | `references/checklist-12-items.md` | 12 项 AI Code Review Checklist |
-| `references/gitlab-field-mapping.md` | GitLab API 字段到 PR Schema 的映射关系 |
-| `assets/admission-report-template.md` | 提测准入报告模板 |
-| `assets/daily-digest-template.md` | 每日汇总报告模板 |
-| `assets/weekly-trend-template.md` | 周趋势报告模板 |
-| `assets/sample-pr.md` | 示例 PR 数据（用于文件模式测试） |
-| `scripts/collect-mr-data.sh` | GitLab MR 数据采集脚本 |
-| `scripts/gitlab-api.sh` | GitLab API 通用请求封装 |
-| `data/reviewer-levels.json` | 审查人级别本地配置映射表 |
+| `references/gitlab-field-mapping.md` | GitLab 字段映射 |
 
+Skill 不应临场改写阈值。覆盖率阈值、CI 模式、Reviewer 资质、Checklist 完成度等均由脚本按 registry 数据计算。
+
+## 异常处理
+
+| 场景 | Skill 行为 |
+|------|------------|
+| 未配置 `GITLAB_TOKEN` | 告知用户设置 Token，并停止 Git API 模式 |
+| GitLab API 无权限或 MR 不存在 | 展示采集脚本错误，提示检查 MR 链接和权限 |
+| registry 中找不到 PR | 停止评估，提示采集未成功写入 |
+| 门禁评估脚本失败 | 展示 stderr，提示不要手工修改 registry 结构 |
+| 报告渲染失败 | 展示错误，保留已评估 registry |
+| `sync push` 失败 | 告知用户报告已本地生成，需稍后执行同步 |
+
+## 输出要求
+
+所有面向测试团队的输出必须使用中文，并包含：
+
+- 判定：`ADMITTED`、`REJECTED`、`CONDITIONAL` 或 `PENDING`
+- 报告路径
+- 阻塞原因列表；无阻塞时写“无阻塞问题”
+- 团队模式下的同步结果
+
+报告必须使用合法 Markdown 表格；不得使用 emoji、box-drawing 字符或装饰性 ASCII 边框。
+
+## 环境变量
+
+```bash
+export GITLAB_TOKEN="glpat-xxxx"
+export GITLAB_HOST="https://gitlab.example.com"
+export CRVIGIL_MODE=team
+export CRVIGIL_MODE=personal
+export CRVIGIL_JOB_MAPPING='{"unit_test":"run-tests","coverage":"coverage-report","static_scan":"sonar","smoke_test":"smoke"}'
+```
+
+`CRVIGIL_MODE` 默认为 `team`。个人模式跳过 Git 同步，仅在本地更新 registry 和报告。

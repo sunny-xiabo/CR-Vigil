@@ -14,6 +14,11 @@
 
 # 临时文件
 data/tmp/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+data/.pr-registry.json.lock
+data/**/*.lock
 
 # 操作系统
 .DS_Store

@@ -106,8 +106,9 @@ flowchart TD
     PARSE_REVIEW --> REGISTRY
     PARSE_APPROVAL --> REGISTRY
 
-    REGISTRY --> WRITE["写入 data/pr-registry.json"]
-    WRITE --> REPORT["生成 reports/admissions 准入报告"]
+    REGISTRY --> WRITE["写入索引与详情\ndata/pr-registry.json + data/mrs/<PR_ID>.json"]
+    WRITE --> EVENTS["追加事件日志\ndata/events/YYYY-MM.jsonl"]
+    EVENTS --> REPORT["生成 reports/admissions 准入报告"]
 ```
 
 ## 四、开发提测材料最小模板
@@ -140,8 +141,9 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    REGISTRY["data/pr-registry.json"] --> DIGEST["生成每日汇总\n/cr-vigil-monitor --digest"]
-    REGISTRY --> TREND["生成周趋势报告\n/cr-vigil-monitor --trend"]
+    REGISTRY["data/pr-registry.json + data/mrs/"] --> SNAPSHOT["写入 data/snapshots/"]
+    SNAPSHOT --> DIGEST["生成每日汇总\n/cr-vigil-monitor --digest"]
+    SNAPSHOT --> TREND["生成周趋势报告\n/cr-vigil-monitor --trend"]
 
     DIGEST --> DIGEST_REPORT["reports/digests/"]
     TREND --> TREND_REPORT["reports/trends/"]
