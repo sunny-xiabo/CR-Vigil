@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-16T10:13:39+08:00",
+  "updated_at": "2026-06-16T10:40:42+08:00",
   "prs": [
     {
       "pr_id": "PR-001",
@@ -132,7 +132,7 @@
       "ai_percentage": 45.0,
       "reviewer": "lisi",
       "violations": 0,
-      "last_updated": "2026-06-16T10:13:39+08:00",
+      "last_updated": "2026-06-16T10:40:42+08:00",
       "history": [
         {
           "timestamp": "2026-06-10T10:00:00+08:00",
@@ -241,6 +241,31 @@
         },
         {
           "timestamp": "2026-06-16T10:13:39+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:35:21+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:35:54+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:36:31+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:37:38+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 准予提测（ADMITTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:40:42+08:00",
           "event": "gate_evaluated",
           "details": "门禁评估完成 -- 准予提测（ADMITTED）"
         }
@@ -385,7 +410,7 @@
       "ai_percentage": 80.0,
       "reviewer": "wangwu",
       "violations": 1,
-      "last_updated": "2026-06-16T10:13:39+08:00",
+      "last_updated": "2026-06-16T10:40:42+08:00",
       "history": [
         {
           "timestamp": "2026-06-09T14:00:00+08:00",
@@ -409,6 +434,11 @@
         },
         {
           "timestamp": "2026-06-16T10:13:39+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 拒绝提测（REJECTED）"
+        },
+        {
+          "timestamp": "2026-06-16T10:40:42+08:00",
           "event": "gate_evaluated",
           "details": "门禁评估完成 -- 拒绝提测（REJECTED）"
         }
@@ -542,7 +572,7 @@
       "ai_percentage": 30.0,
       "reviewer": "lisi",
       "violations": 0,
-      "last_updated": "2026-06-16T10:13:39+08:00",
+      "last_updated": "2026-06-16T10:40:42+08:00",
       "history": [
         {
           "timestamp": "2026-06-01T09:00:00+08:00",
@@ -571,6 +601,11 @@
         },
         {
           "timestamp": "2026-06-16T10:13:39+08:00",
+          "event": "gate_evaluated",
+          "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+        },
+        {
+          "timestamp": "2026-06-16T10:40:42+08:00",
           "event": "gate_evaluated",
           "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
         }

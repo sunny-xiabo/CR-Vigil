@@ -1,6 +1,6 @@
 # CR 监控日报：2026-06-16
 
-**生成时间**：2026-06-16 10:13:39 +0800
+**生成时间**：2026-06-16 10:40:42 +0800
 **活跃 PR 总数**：3
 **可提测**：1
 **已阻塞**：1
@@ -25,9 +25,9 @@
 
 | PR 编号 | 标题 | 开发 | AI占比 | 门禁一 | 门禁二 | 门禁三 | 判定 |
 |---------|------|------|--------|--------|--------|--------|------|
-| PR-001 | feat: add user authentication module with JWT support | zhangsan | 45% | PASS | PASS | PASS | ADMITTED |
-| PR-002 | fix: quick patch for payment callback timeout | wangwu | 80% | FAIL | FAIL | FAIL | REJECTED |
-| PR-003 | refactor: extract common logging middleware | zhaoliu | 30% | PASS | WARN | PASS | CONDITIONAL |
+| PR-001 | feat: add user authentication module with JWT support | zhangsan | 45% | 🟢 PASS | 🟢 PASS | 🟢 PASS | 🟢 ADMITTED |
+| PR-002 | fix: quick patch for payment callback timeout | wangwu | 80% | 🔴 FAIL | 🔴 FAIL | 🔴 FAIL | 🔴 REJECTED |
+| PR-003 | refactor: extract common logging middleware | zhaoliu | 30% | 🟢 PASS | 🟡 WARN | 🟢 PASS | 🟡 CONDITIONAL |
 
 ---
 
