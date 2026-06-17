@@ -62,15 +62,15 @@ python -m crvigil --no-sync trend
 {
   "ok": true,
   "command": "admit",
-  "pr_id": "MR-3-llm-testgen",
+  "pr_id": "MR-42-project",
   "verdict": "REJECTED",
-  "report_path": "reports/admissions/MR-3-llm-testgen-admission-2026-06-15.md",
+  "report_path": "reports/admissions/MR-42-project-admission-2026-06-17.md",
   "blocking_reasons": [],
   "stage1": {
     "evidence": {
-      "mr_url": "https://gitlab.example.com/group/project/-/merge_requests/3",
+      "mr_url": "https://gitlab.example.com/group/project/-/merge_requests/42",
       "pipeline_url": "",
-      "cr_approval_link": "https://gitlab.example.com/group/project/-/merge_requests/3"
+      "cr_approval_link": "https://gitlab.example.com/group/project/-/merge_requests/42"
     }
   }
 }
