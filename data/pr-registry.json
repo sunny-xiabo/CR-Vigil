@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-06-16T15:10:57+08:00",
+  "updated_at": "2026-06-17T11:32:01+08:00",
   "storage_version": 2,
   "storage_mode": "index",
   "prs": [
     {
       "pr_id": "PR-001",
-      "title": "feat: add user authentication module with JWT support",
+      "title": "feat: 新增基于 JWT 的用户认证模块",
       "author": "zhangsan",
       "status": "open",
       "url": "https://github.com/example/repo/pull/001",
@@ -17,12 +17,12 @@
         "gate_4": "READY"
       },
       "blocking_reasons_count": 0,
-      "last_updated": "2026-06-16T15:10:57+08:00",
+      "last_updated": "2026-06-17T11:32:01+08:00",
       "record_path": "data/mrs/PR-001.json"
     },
     {
       "pr_id": "PR-002",
-      "title": "fix: quick patch for payment callback timeout",
+      "title": "fix: 支付回调超时的快速修复",
       "author": "wangwu",
       "status": "open",
       "url": "https://github.com/example/repo/pull/002",
@@ -34,12 +34,12 @@
         "gate_4": "N/A"
       },
       "blocking_reasons_count": 10,
-      "last_updated": "2026-06-16T15:10:57+08:00",
+      "last_updated": "2026-06-17T11:32:01+08:00",
       "record_path": "data/mrs/PR-002.json"
     },
     {
       "pr_id": "PR-003",
-      "title": "refactor: extract common logging middleware",
+      "title": "refactor: 提取公共日志中间件",
       "author": "zhaoliu",
       "status": "open",
       "url": "https://github.com/example/repo/pull/003",
@@ -51,7 +51,7 @@
         "gate_4": "READY"
       },
       "blocking_reasons_count": 0,
-      "last_updated": "2026-06-16T15:10:57+08:00",
+      "last_updated": "2026-06-17T11:32:01+08:00",
       "record_path": "data/mrs/PR-003.json"
     },
     {

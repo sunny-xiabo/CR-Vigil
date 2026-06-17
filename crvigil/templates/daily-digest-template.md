@@ -33,23 +33,17 @@
 
 {ADMITTED_PR_LIST}
 
-*如无 PR 通过准入，显示：「当前没有 PR 通过测试准入。」*
-
 ---
 
 ## 被阻塞 PR
 
 {BLOCKED_PR_LIST}
 
-*如无 PR 被阻塞，显示：「当前没有 PR 被阻塞，所有活跃 PR 均可进入测试。」*
-
 ---
 
 ## 待评估 PR
 
 {PENDING_PR_LIST}
-
-*如无 PR 待评估，显示：「当前没有 PR 等待评估。」*
 
 ---
 
@@ -83,8 +77,6 @@
 
 {VIOLATION_ALERTS}
 
-*如无复现预警，显示：「今日未检测到复现违规。」*
-
 ---
 
 ## 今日行动项
@@ -93,4 +85,4 @@
 
 ---
 
-*本报告由 CR-Vigil Monitor Skill 自动生成。下一次日报计划于 {NEXT_DIGEST_TIME} 生成。*
+*本报告由 CR-Vigil Monitor Skill 自动生成。*

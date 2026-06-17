@@ -19,9 +19,9 @@ reports:
       summary: true
       admitted_prs: true
       blocked_prs: true
-      pending_prs: false
+      pending_prs: true
       gate_distribution: true
-      detailed_gate_reasons: false
+      detailed_gate_reasons: true
       action_items: true
   weekly:
     profile: standard

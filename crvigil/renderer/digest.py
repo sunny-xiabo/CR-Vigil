@@ -141,14 +141,25 @@ def render_digest(registry: dict[str, Any], output_root: Path, config: dict[str,
     return path
 
 
+_GATE_PREFIX = {
+    "gate_1": "门禁一：",
+    "gate_2": "门禁二：",
+    "gate_3": "门禁三：",
+}
+
+
 def failure_details(prs: list[dict[str, Any]], gate: str) -> str:
     failed = [pr for pr in prs if pr.get("gates_summary", {}).get(gate) == "FAIL"]
     if not failed:
         return "无"
+    prefix = _GATE_PREFIX.get(gate, "")
     rows = []
     for pr in failed:
-        reasons = "；".join(pr.get("blocking_reasons", [])) or gate_summary(pr, gate)
-        rows.append(f"- {pr.get('pr_id')}：{reasons}")
+        if pr.get("blocking_reasons"):
+            reasons = "；".join(r for r in pr["blocking_reasons"] if r.startswith(prefix))
+        else:
+            reasons = ""
+        rows.append(f"- {pr.get('pr_id')}：{reasons or gate_summary(pr, gate)}")
     return "\n".join(rows)
 
 

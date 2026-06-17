@@ -1,21 +1,22 @@
 {
   "pr_id": "PR-003",
-  "title": "refactor: extract common logging middleware",
+  "title": "refactor: 提取公共日志中间件",
   "author": "zhaoliu",
   "url": "https://github.com/example/repo/pull/003",
   "created_at": "2026-06-01T09:00:00+08:00",
   "updated_at": "2026-06-08T11:00:00+08:00",
   "status": "open",
-  "ci_mode": "auto",
+  "source": "file",
+  "ci_mode": "enabled",
   "ai_usage": {
     "used": true,
     "declared": true,
-    "percentage": 30,
+    "percentage": 30.0,
     "tools": [
       "GitHub Copilot"
     ],
     "modules": [
-      "Request/Response log formatter"
+      "请求/响应日志格式化器"
     ]
   },
   "review": {
@@ -44,33 +45,34 @@
       "total": 89,
       "passed": 89,
       "failed": 0,
-      "pass_rate": 100
+      "pass_rate": 100.0
     },
     "coverage": {
       "incremental_coverage_pct": 76.3,
       "threshold": 70
     },
     "static_scan": {
+      "tool": "SonarQube",
       "blocker_count": 0,
       "critical_count": 0,
       "warning_count": 1,
-      "tool": "sonar"
+      "detected": true
     },
     "smoke_test": {
-      "total": 10,
-      "passed": 10,
+      "total": 100,
+      "passed": 100,
       "failed": 0,
-      "pass_rate": 100
+      "pass_rate": 100.0
     }
   },
   "declaration": {
     "ci_proof_provided": true,
     "ci_proof_url": "https://ci.example.com/jobs/003",
-    "cr_approval_link": "https://github.com/example/repo/pull/003#review-54321",
+    "cr_approval_link": "file://local-review",
     "self_inspection": {
       "submitted": true,
-      "signed_by": "zhaoliu",
-      "signed_date": "2026-06-12T09:00:00+08:00",
+      "signed_by": "",
+      "signed_date": null,
       "checks": {
         "ci_passed": true,
         "cr_completed": true,
@@ -126,7 +128,7 @@
   "ai_percentage": 30.0,
   "reviewer": "lisi",
   "violations": 0,
-  "last_updated": "2026-06-16T15:10:57+08:00",
+  "last_updated": "2026-06-17T11:32:01+08:00",
   "history": [
     {
       "timestamp": "2026-06-01T09:00:00+08:00",
@@ -200,6 +202,41 @@
     },
     {
       "timestamp": "2026-06-16T15:10:57+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:14:24+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:14:40+08:00",
+      "event": "file_collected",
+      "details": "Data collected from .claude/skills/cr-vigil-monitor/assets/sample-pr.md"
+    },
+    {
+      "timestamp": "2026-06-17T11:14:40+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:27:46+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:30:11+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:31:00+08:00",
+      "event": "gate_evaluated",
+      "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
+    },
+    {
+      "timestamp": "2026-06-17T11:32:01+08:00",
       "event": "gate_evaluated",
       "details": "门禁评估完成 -- 有条件通过（CONDITIONAL）"
     }
