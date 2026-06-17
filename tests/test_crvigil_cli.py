@@ -18,11 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class CrvigilCliTest(unittest.TestCase):
     def test_parse_gitlab_mr_url(self):
-        parsed = parse_mr_url("https://gitlab.miotech.com/miotech-application/esghub/test/llm-testgen/-/merge_requests/3")
-        self.assertEqual(parsed["host"], "https://gitlab.miotech.com")
-        self.assertEqual(parsed["project_path"], "miotech-application/esghub/test/llm-testgen")
-        self.assertEqual(parsed["iid"], "3")
-        self.assertEqual(parsed["project_short"], "llm-testgen")
+        parsed = parse_mr_url("https://gitlab.example.com/group/project/-/merge_requests/42")
+        self.assertEqual(parsed["host"], "https://gitlab.example.com")
+        self.assertEqual(parsed["project_path"], "group/project")
+        self.assertEqual(parsed["iid"], "42")
+        self.assertEqual(parsed["project_short"], "project")
 
     def test_validate_command_outputs_json(self):
         with tempfile.TemporaryDirectory() as temp_dir:

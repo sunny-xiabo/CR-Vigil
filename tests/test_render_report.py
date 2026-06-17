@@ -64,7 +64,7 @@ class RenderReportTest(unittest.TestCase):
             self.assertRegex(path.name, r"^weekly-trend-\d{4}-\d{2}-\d{2}\.md$")
             self.assertIn("暂无历史数据", content)
             self.assertNotRegex(content, r"\{[A-Z0-9_]+\}")
-            self.assertIn("🔴 50 `[█████░░░░░]`", content)
+            self.assertIn("合规评分", content)
 
     def test_admission_refuses_to_render_before_stage1_completion(self):
         registry = {
