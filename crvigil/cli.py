@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .utils import ROOT
 from .json_tools import validate_json_file
-from .workflow import admit, admit_file, digest, emit, evaluate_one, trend
+from .workflow import admit, admit_file, declare, digest, emit, evaluate_one, trend
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,6 +42,10 @@ def build_parser() -> argparse.ArgumentParser:
     add_common_options(validate_parser)
     validate_parser.add_argument("--repair", action="store_true")
     validate_parser.add_argument("--write", action="store_true")
+
+    declare_parser = subparsers.add_parser("declare", help="Generate pre-filled declaration template for a MR")
+    add_common_options(declare_parser)
+    declare_parser.add_argument("mr_url")
     return parser
 
 
@@ -70,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
             result = trend(registry_path, output_root, no_sync=args.no_sync, config_path=config_path)
         elif args.command == "validate":
             result = validate_json_file(registry_path, repair=args.repair, write=args.write)
+        elif args.command == "declare":
+            result = declare(args.mr_url)
         else:  # pragma: no cover
             raise ValueError(f"未知命令: {args.command}")
         print(emit(result) if isinstance(result, dict) else json.dumps(result, ensure_ascii=False, indent=2))

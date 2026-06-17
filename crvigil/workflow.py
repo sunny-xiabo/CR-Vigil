@@ -22,6 +22,7 @@ from .utils import ROOT
 from .config import load_config, storage_int, sync_int
 from .gitlab_collect import collect_mr
 from .file_collect import collect_file
+from .declaration import build_declaration
 from .storage import workspace_root_for_registry, write_mr_record, write_mr_records
 from .snapshots import (
     cleanup_snapshots,
@@ -304,3 +305,10 @@ def trend(
         stage2={"report_path": str(report_path)},
         report_path=str(report_path),
     )
+
+
+def declare(url: str) -> dict[str, Any]:
+    result = build_declaration(url)
+    result["ok"] = True
+    result["command"] = "declare"
+    return result

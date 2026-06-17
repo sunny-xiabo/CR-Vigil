@@ -7,6 +7,7 @@
 ```bash
 python -m crvigil admit <MR链接>
 python -m crvigil admit-file <Markdown文件路径>
+python -m crvigil declare <MR链接>
 python -m crvigil evaluate --pr-id <PR_ID> --write
 python -m crvigil digest
 python -m crvigil trend
@@ -20,6 +21,7 @@ python -m crvigil validate --repair --write
 ```bash
 python -m crvigil admit <MR_URL>
 python -m crvigil admit-file <FILE_PATH>
+python -m crvigil declare <MR_URL>
 python -m crvigil evaluate --pr-id <PR_ID> --write
 ```
 

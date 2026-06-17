@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-17
+
+### Added
+
+- 新增 `declare` 子命令，开发运行 `python -m crvigil declare <MR链接>` 可自动生成预填好的声明模板。
+- `declare` 从 GitLab API 采集 CI 状态、审查人、AI 声明等数据，生成可直接粘贴到 MR 描述中的 Markdown。
+- 新增 `crvigil/declaration.py` 声明模板生成模块和 `crvigil/templates/declaration-template.md` 模板。
+- Skill 新增 `/cr-vigil-monitor --declare <MR链接>` 工作流。
+
+### Fixed
+
+- 修复日报违规详情未按门禁分类的问题，`failure_details()` 现在按门禁前缀过滤 blocking_reasons。
+- 清理日报/周报模板中的注释性占位文字。
+- 开启 `cr-vigil.yml` 中 `pending_prs` 和 `detailed_gate_reasons` 配置。
+
 ## 2026-06-16
 
 ### Fixed

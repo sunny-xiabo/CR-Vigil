@@ -52,6 +52,7 @@ reports/trends/       周报
 ```bash
 python -m crvigil admit <MR链接>
 python -m crvigil admit-file <文件路径>
+python -m crvigil declare <MR链接>
 python -m crvigil digest
 python -m crvigil trend
 python -m crvigil validate
@@ -191,6 +192,14 @@ Gate1=N/A                         -> 不阻断提测
 - 测试负责运行 CR-Vigil 做准入校验，不承担代码 CR 责任。
 - 项目无 CI 时，门禁一可自动标记为 N/A；门禁二和门禁三仍需满足。
 
+开发也可以使用 `declare` 命令一键生成预填好的声明模板：
+
+```bash
+python -m crvigil declare <MR链接>
+```
+
+命令会自动从 GitLab 采集 CI 状态、审查人、AI 声明等数据，生成可直接粘贴到 MR 描述中的声明 Markdown。
+
 ## 配置
 
 报告和存储策略通过 `cr-vigil.yml` 配置。
@@ -316,6 +325,7 @@ CR-Vigil/
 ├── crvigil/
 │   ├── cli.py              # python -m crvigil 入口
 │   ├── workflow.py         # 阶段驱动工作流
+│   ├── declaration.py      # 声明模板生成
 │   ├── gitlab_collect.py   # GitLab MR 采集
 │   ├── file_collect.py     # Markdown 文件采集
 │   ├── evaluator.py        # 门禁评估
